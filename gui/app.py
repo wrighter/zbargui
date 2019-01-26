@@ -3,7 +3,8 @@ import os
 import zbar
 from PIL import Image
 
-from flask import Flask, flash, request, redirect, url_for, render_template
+from flask import Flask, flash, request, redirect, render_template, \
+        jsonify
 from werkzeug.utils import secure_filename
 
 UPLOAD_FOLDER = '/app/static/uploads'
@@ -75,6 +76,48 @@ def upload_file():
       <input type=submit value=Upload>
     </form>
     '''
+
+
+@app.route('/scan', methods=['POST'])
+def scan_file():
+    # check if the post request has the file part
+    if 'file' not in request.files:
+        return jsonify({'Error': 'File not included'})
+    f = request.files['file']
+    # if user does not select file, browser also
+    # submit an empty part without filename
+    if f.filename == '':
+        return jsonify({'Error': 'File name empty'})
+    if f and allowed_file(f.filename):
+        scanner = zbar.ImageScanner()
+        scanner.parse_config('enable')
+        pil = Image.open(f).convert('L')
+        width, height = pil.size
+        raw = pil.tobytes()
+        image = zbar.Image(width, height, 'Y800', raw)
+
+        # scan the image for barcodes
+        scanner.scan(image)
+        # extract results
+        results = []
+        for symbol in image:
+            # do something useful with results
+            # copy data out? is this safe?
+            results.append(dict(type=symbol.type,
+                                configs=[str(_) for _ in symbol.configs],
+                                modifiers=[str(_) for _ in symbol.modifiers],
+                                quality=symbol.quality,
+                                count=symbol.count,
+                                data=symbol.data,
+                                location=symbol.location,
+                                orientation=symbol.orientation,
+                                components=[str(_) for _ in symbol.components]
+                                ))
+
+        # clean up
+        del(image)
+        return jsonify(results)
+    return jsonify({'Error': 'Filename %s not allowed' % f.filename})
 
 
 if __name__ == '__main__':
