@@ -11,7 +11,8 @@ RUN apt-get update && \
 	    libv4l-dev \
 	    pkg-config \
 	    python2.7-dev \
-	    python-pip		
+	    python-pip \
+            python-qt4
 
 RUN apt-get remove -y python3 
 
