@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h1>{% block title %}Uploaded Image{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+{% for symbol in results %}
+<ul>
+  <li>Type: {{ symbol.type }}</li>
+  <li>Configs: {{ symbol.configs }}</li>
+  <li>Modifiers: {{ symbol.modifiers }}</li>
+  <li>Quality: {{ symbol.quality }}</li>
+  <li>Count: {{ symbol.count }} </li>
+  <li>Data: {{ symbol.data }}</li>
+  <li>Location: {{ symbol.location }}</li>
+  <li>Orientation: {{ symbol.orientation }}</li>
+  <li>Components: {{ symbol.components }}</li>
+</ul>
+{% endfor %}
+<img src={{ url_for('static', filename=filename) }} style="max-height: 300px; max-width: 300px;" />
+{% endblock %}
